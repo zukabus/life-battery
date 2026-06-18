@@ -39,18 +39,7 @@ class LifeBatteryWidget : AppWidgetProvider() {
             views.setTextViewText(R.id.widget_status, status)
             views.setTextColor(R.id.widget_status, color)
             views.setInt(R.id.widget_fill, "setBackgroundColor", color)
-
-            // Fill height: use layout weights so the fill grows from bottom
             views.setInt(R.id.widget_empty, "setBackgroundColor", Color.TRANSPARENT)
-            // Set weights — empty above, fill below. Total = 100.
-            // RemoteViews can't set layout_weight directly across all API levels,
-            // so we use setFloat on the field (works on AppWidget hosts).
-            try {
-                val fill = battery.coerceIn(0, 100)
-                val empty = 100 - fill
-                views.setFloat(R.id.widget_fill, "setLayoutWeight", fill.toFloat())
-                views.setFloat(R.id.widget_empty, "setLayoutWeight", empty.toFloat())
-            } catch (_: Throwable) { /* ignore on hosts that don't support it */ }
 
             // Tap → open app
             val intent = Intent(context, MainActivity::class.java).apply {
