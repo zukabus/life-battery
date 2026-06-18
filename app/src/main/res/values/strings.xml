@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Life Battery</string>
+    <string name="widget_description">Shows your current life battery level</string>
+</resources>
