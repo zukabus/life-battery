@@ -38,10 +38,8 @@ class LifeBatteryWidget : AppWidgetProvider() {
             views.setTextViewText(R.id.widget_pct, "$battery%")
             views.setTextViewText(R.id.widget_status, status)
             views.setTextColor(R.id.widget_status, color)
-            views.setInt(R.id.widget_fill, "setBackgroundColor", color)
-            views.setInt(R.id.widget_empty, "setBackgroundColor", Color.TRANSPARENT)
+            views.setInt(R.id.widget_indicator, "setBackgroundColor", color)
 
-            // Tap → open app
             val intent = Intent(context, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             }
@@ -54,7 +52,6 @@ class LifeBatteryWidget : AppWidgetProvider() {
             mgr.updateAppWidget(widgetId, views)
         }
 
-        /** Call from MainActivity after battery changes to refresh all widgets. */
         fun refreshAll(context: Context) {
             val mgr = AppWidgetManager.getInstance(context)
             val ids = mgr.getAppWidgetIds(ComponentName(context, LifeBatteryWidget::class.java))

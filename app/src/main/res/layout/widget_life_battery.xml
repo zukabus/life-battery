@@ -8,50 +8,12 @@
     android:gravity="center_vertical"
     android:padding="14dp">
 
-    <!-- Battery icon -->
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center_horizontal">
+    <View
+        android:id="@+id/widget_indicator"
+        android:layout_width="10dp"
+        android:layout_height="48dp"
+        android:background="#4ADE80" />
 
-        <!-- tip -->
-        <View
-            android:layout_width="14dp"
-            android:layout_height="4dp"
-            android:background="@drawable/battery_tip" />
-
-        <!-- shell holding the fill -->
-        <FrameLayout
-            android:layout_width="34dp"
-            android:layout_height="60dp"
-            android:background="@drawable/battery_shell"
-            android:padding="3dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
-
-                <!-- spacer (empty top) -->
-                <View
-                    android:id="@+id/widget_empty"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="0" />
-
-                <!-- fill (bottom) -->
-                <View
-                    android:id="@+id/widget_fill"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="100"
-                    android:background="@drawable/battery_fill" />
-            </LinearLayout>
-        </FrameLayout>
-    </LinearLayout>
-
-    <!-- Text block -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -65,7 +27,7 @@
             android:layout_height="wrap_content"
             android:text="100%"
             android:textColor="#F1F5F9"
-            android:textSize="26sp"
+            android:textSize="28sp"
             android:textStyle="bold" />
 
         <TextView
