@@ -104,22 +104,38 @@ fun AppRoot() {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences("life_battery_v1", Context.MODE_PRIVATE) }
     var actions by remember { mutableStateOf(loadActions(prefs)) }
+    var resetTick by remember { mutableIntStateOf(0) }
 
     when (screen) {
         "home" -> LifeBatteryScreen(
             prefs = prefs,
             actions = actions,
+            resetTick = resetTick,
             onOpenSettings = { screen = "settings" }
         )
         "settings" -> SettingsScreen(
+            prefs = prefs,
             actions = actions,
             onChange = {
                 actions = it
                 saveActions(prefs, it)
             },
+            onReset = {
+                resetAppState(prefs)
+                LifeBatteryWidget.refreshAll(context)
+                resetTick++
+            },
             onBack = { screen = "home" }
         )
     }
+}
+
+fun resetAppState(prefs: SharedPreferences) {
+    val editor = prefs.edit()
+    editor.putFloat("battery", 100f)
+    editor.remove("last_drain_day")
+    prefs.all.keys.filter { it.startsWith("log_") }.forEach { editor.remove(it) }
+    editor.apply()
 }
 
 // ── Colors ────────────────────────────────────────────────────────────────────
@@ -146,11 +162,12 @@ fun batteryColor(pct: Float) = when {
 fun LifeBatteryScreen(
     prefs: SharedPreferences,
     actions: List<Action>,
+    resetTick: Int,
     onOpenSettings: () -> Unit
 ) {
     val context = LocalContext.current
-    var battery by remember { mutableFloatStateOf(prefs.getFloat("battery", 100f)) }
-    var todayLog by remember { mutableStateOf(loadTodayLog(prefs)) }
+    var battery by remember(resetTick) { mutableFloatStateOf(prefs.getFloat("battery", 100f)) }
+    var todayLog by remember(resetTick) { mutableStateOf(loadTodayLog(prefs)) }
     var snackMsg by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
@@ -284,14 +301,44 @@ fun LifeBatteryScreen(
 
 @Composable
 fun SettingsScreen(
+    prefs: SharedPreferences,
     actions: List<Action>,
     onChange: (List<Action>) -> Unit,
+    onReset: () -> Unit,
     onBack: () -> Unit
 ) {
     var label by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
     var isDrain by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+    var showResetDialog by remember { mutableStateOf(false) }
+
+    if (showResetDialog) {
+        AlertDialog(
+            onDismissRequest = { showResetDialog = false },
+            containerColor = CardDark,
+            title = { Text("Reset App?", color = TextPrimary, fontWeight = FontWeight.Bold) },
+            text = {
+                Text(
+                    "This will set battery back to 100% and clear all logs. Your custom actions will stay.",
+                    color = TextMuted
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    onReset()
+                    showResetDialog = false
+                }) {
+                    Text("Reset", color = Red, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showResetDialog = false }) {
+                    Text("Cancel", color = TextMuted)
+                }
+            }
+        )
+    }
 
     Box(Modifier.fillMaxSize().background(BgDark)) {
         Column(
@@ -386,6 +433,29 @@ fun SettingsScreen(
                     }
                 }
             }
+
+            Spacer(Modifier.height(28.dp))
+
+            SectionLabel("Danger Zone")
+            Spacer(Modifier.height(8.dp))
+            Button(
+                onClick = { showResetDialog = true },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Transparent,
+                    contentColor = Red
+                ),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Red),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth().height(48.dp)
+            ) {
+                Text("Reset App", color = Red, fontWeight = FontWeight.Bold)
+            }
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "Resets battery to 100% and clears logs. Keeps your custom actions.",
+                color = TextMuted,
+                fontSize = 11.sp
+            )
 
             Spacer(Modifier.height(32.dp))
         }
