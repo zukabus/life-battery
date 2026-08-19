@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Canon, USB printer class (7), subclass 1, protocol 2 (bidirectional).
+         Bidirectional matters: CAPT is a conversation, not a one-way dump. -->
+    <usb-device vendor-id="1193" class="7" subclass="1" protocol="2" />
+    <!-- Some units enumerate as protocol 1 (unidirectional) on the first
+         interface; matching both means the app still offers to launch. -->
+    <usb-device vendor-id="1193" class="7" subclass="1" protocol="1" />
+</resources>
