@@ -26,6 +26,13 @@ val verifyJobSequence by tasks.registering(JavaExec::class) {
     classpath = sourceSets["test"].runtimeClasspath
 }
 
+val verifyPageRange by tasks.registering(JavaExec::class) {
+    group = "verification"
+    description = "Checks the page-range parser against its edge cases"
+    mainClass.set("dev.jenil.capt.PageRangeTestKt")
+    classpath = sourceSets["test"].runtimeClasspath
+}
+
 tasks.named("check") {
-    dependsOn(verifyHiScoa, verifyJobSequence)
+    dependsOn(verifyHiScoa, verifyJobSequence, verifyPageRange)
 }

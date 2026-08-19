@@ -28,6 +28,8 @@ class PdfRasterizer(
     descriptor: ParcelFileDescriptor,
     private val geometry: PageGeometry,
     private val logger: CaptLogger = CaptLogger.NONE,
+    /** Whether to scale the page to the sheet or print it at true size. */
+    private val scaleMode: ScaleMode = ScaleMode.FIT,
     /** Scanlines rendered per strip. Larger is faster but uses more memory. */
     private val stripHeight: Int = DEFAULT_STRIP_HEIGHT,
 ) : Closeable {
@@ -82,11 +84,21 @@ class PdfRasterizer(
 
         // PdfRenderer reports page size in points (1/72 inch).
         val dpiScale = 600f / 72f
-        val fullWidth = p.width * dpiScale
-        val fullHeight = p.height * dpiScale
-        // Fit inside the printable area, preserving aspect ratio.
-        val fit = min(width / fullWidth, geometry.paperHeight / fullHeight)
-        pageScale = dpiScale * fit
+        pageScale = when (scaleMode) {
+            ScaleMode.ACTUAL -> dpiScale
+            ScaleMode.FIT -> {
+                // Shrink to fit the printable area, preserving aspect ratio.
+                // Never enlarge: blowing a small page up to fill A4 is
+                // surprising, and "fit" should mean "make it all visible".
+                val fit = min(
+                    width / (p.width * dpiScale),
+                    geometry.paperHeight / (p.height * dpiScale),
+                )
+                dpiScale * min(fit, 1f)
+            }
+        }
+        // Centre it either way; in ACTUAL mode an oversized page is clipped
+        // evenly on all sides rather than losing everything from one edge.
         pageOffsetX = (width - p.width * pageScale) / 2f
         pageOffsetY = (geometry.paperHeight - p.height * pageScale) / 2f
 
